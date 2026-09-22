@@ -58,6 +58,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
+// Root fallback mounts (Resilience for frontend calls without /api prefix)
+app.use('/auth', authRoutes);
+app.use('/products', productRoutes);
+app.use('/stock', stockRoutes);
+app.use('/dashboard', dashboardRoutes);
+
 // 404 & Error Handling
 app.use(notFound);
 app.use(errorHandler);

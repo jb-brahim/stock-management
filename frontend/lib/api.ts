@@ -1,4 +1,10 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://stock-management-2x8r.onrender.com/api';
+const getApiBaseUrl = () => {
+  let rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://stock-management-2x8r.onrender.com/api';
+  rawUrl = rawUrl.trim().replace(/\/$/, '');
+  return rawUrl.endsWith('/api') ? rawUrl : `${rawUrl}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Custom API Client with automatic Authorization Bearer Header injection
