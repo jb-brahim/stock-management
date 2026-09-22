@@ -796,9 +796,9 @@ export function InventoryDashboard() {
 
   // Auth Form State (Login & Register)
   const [isSignUp, setIsSignUp] = useState(false)
-  const [authName, setAuthName] = useState('Nouveau Membre')
-  const [authEmail, setAuthEmail] = useState('admin@example.com')
-  const [authPassword, setAuthPassword] = useState('password123')
+  const [authName, setAuthName] = useState('')
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
   const [authError, setAuthError] = useState('')
 
   // Modals
@@ -1151,7 +1151,7 @@ export function InventoryDashboard() {
             }}
           >
             <button
-              onClick={() => { setIsSignUp(false); setAuthError(''); }}
+              onClick={() => { setIsSignUp(false); setAuthError(''); setAuthEmail(''); setAuthPassword(''); setAuthName(''); }}
               style={{
                 flex: 1,
                 padding: '8px',
@@ -1168,7 +1168,7 @@ export function InventoryDashboard() {
               Connexion (Login)
             </button>
             <button
-              onClick={() => { setIsSignUp(true); setAuthError(''); }}
+              onClick={() => { setIsSignUp(true); setAuthError(''); setAuthEmail(''); setAuthPassword(''); setAuthName(''); }}
               style={{
                 flex: 1,
                 padding: '8px',
@@ -1213,6 +1213,7 @@ export function InventoryDashboard() {
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
                   required
+                  placeholder="votre.email@domaine.com"
                   style={{
                     width: '100%',
                     padding: '10px 12px',
@@ -1232,6 +1233,7 @@ export function InventoryDashboard() {
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
                   required
+                  placeholder="••••••••"
                   style={{
                     width: '100%',
                     padding: '10px 12px',
