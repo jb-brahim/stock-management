@@ -1147,7 +1147,7 @@ export function InventoryDashboard() {
             >
               <Boxes style={{ width: '26px', height: '26px' }} />
             </div>
-            <h2 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>Stockly Backend API</h2>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>Stockly</h2>
             <p style={{ color: '#8c92a2', fontSize: '12px', marginTop: '6px' }}>
               Système de Gestion de Produits & Mouvements de Stock
             </p>
@@ -1256,7 +1256,7 @@ export function InventoryDashboard() {
               </div>
 
               <Button type="submit" className="primary-button" style={{ height: '42px', marginTop: '6px', fontSize: '13px' }}>
-                Se connecter au serveur
+                Se connecter
               </Button>
             </form>
           ) : (
@@ -1329,63 +1329,6 @@ export function InventoryDashboard() {
             </form>
           )}
 
-          {/* Quick Demo Fill Credentials */}
-          <div
-            style={{
-              marginTop: '22px',
-              padding: '14px',
-              borderRadius: '10px',
-              background: '#f8f9fe',
-              border: '1px dashed #dbe0fc',
-              fontSize: '11px',
-            }}
-          >
-            <strong style={{ color: '#454b5a', display: 'block', marginBottom: '6px' }}>
-              🔑 Identifiants Démo (Accès Rapide) :
-            </strong>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: '#6256eb' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthEmail('admin@example.com')
-                  setAuthPassword('password123')
-                  setIsSignUp(false)
-                }}
-                style={{
-                  textAlign: 'left',
-                  background: 'none',
-                  border: 0,
-                  color: '#6256eb',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: 0,
-                }}
-              >
-                👉 Remplir <strong>Admin</strong>: admin@example.com / password123
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthEmail('user@example.com')
-                  setAuthPassword('password123')
-                  setIsSignUp(false)
-                }}
-                style={{
-                  textAlign: 'left',
-                  background: 'none',
-                  border: 0,
-                  color: '#6256eb',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: 0,
-                }}
-              >
-                👉 Remplir <strong>User</strong>: user@example.com / password123
-              </button>
-            </div>
-          </div>
         </div>
       </main>
     )
@@ -1471,7 +1414,7 @@ export function InventoryDashboard() {
             <Boxes />
           </div>
           <div>
-            <strong>Stockly API</strong>
+            <strong>Stockly</strong>
             <span>Gestion d’inventaire</span>
           </div>
           <button className="close-menu" onClick={() => setMenuOpen(false)} aria-label="Fermer le menu">
