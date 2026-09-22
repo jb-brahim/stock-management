@@ -807,32 +807,32 @@ export function InventoryDashboard() {
   const [showExitModal, setShowExitModal] = useState(false)
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
 
-  // Product Form State
+  // Product Form State (Blank by default)
   const [prodForm, setProdForm] = useState({
-    reference: 'PRD-001',
-    name: 'Chaise de bureau Ergonomique',
-    price: 180,
-    defaultOrigin: 'France',
-    category: 'Furniture',
-    minimumStock: 5,
-    barcode: '6191234567890',
+    reference: '',
+    name: '',
+    price: '',
+    defaultOrigin: 'Tunisie',
+    category: '',
+    minimumStock: '',
+    barcode: '',
   })
 
-  // Entry Form State
+  // Entry Form State (Blank by default)
   const [entryForm, setEntryForm] = useState({
     productId: '',
-    quantity: 10,
-    origin: 'France',
-    unitPrice: 150,
-    note: 'Nouveau lot reçu',
+    quantity: '',
+    origin: 'Tunisie',
+    unitPrice: '',
+    note: '',
   })
 
-  // Exit Form State
+  // Exit Form State (Blank by default)
   const [exitForm, setExitForm] = useState({
     productId: '',
-    quantity: 5,
-    unitPrice: 180,
-    note: 'Vente client',
+    quantity: '',
+    unitPrice: '',
+    note: '',
   })
 
   // Change Password State
@@ -1038,6 +1038,15 @@ export function InventoryDashboard() {
       })
       setSuccessMsg('Produit créé avec succès!')
       setShowProductModal(false)
+      setProdForm({
+        reference: '',
+        name: '',
+        price: '',
+        defaultOrigin: 'Tunisie',
+        category: '',
+        minimumStock: '',
+        barcode: '',
+      })
       loadData()
     } catch (err: any) {
       setErrorMsg(err.message || 'Erreur lors de la création du produit')
@@ -1058,6 +1067,13 @@ export function InventoryDashboard() {
       })
       setSuccessMsg('Entrée de stock enregistrée avec succès!')
       setShowEntryModal(false)
+      setEntryForm({
+        productId: '',
+        quantity: '',
+        origin: 'Tunisie',
+        unitPrice: '',
+        note: '',
+      })
       loadData()
     } catch (err: any) {
       setErrorMsg(err.message || 'Erreur lors de l’entrée de stock')
@@ -1083,6 +1099,12 @@ export function InventoryDashboard() {
       })
       setSuccessMsg('Sortie de stock enregistrée avec succès!')
       setShowExitModal(false)
+      setExitForm({
+        productId: '',
+        quantity: '',
+        unitPrice: '',
+        note: '',
+      })
       loadData()
     } catch (err: any) {
       setErrorMsg(err.message || 'Erreur lors de la sortie de stock')
@@ -1855,8 +1877,9 @@ export function InventoryDashboard() {
                         type="number"
                         min="1"
                         value={entryForm.quantity}
-                        onChange={(e) => setEntryForm({ ...entryForm, quantity: Number(e.target.value) })}
+                        onChange={(e) => setEntryForm({ ...entryForm, quantity: e.target.value })}
                         required
+                        placeholder="0"
                         style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                       />
                     </div>
@@ -1880,8 +1903,9 @@ export function InventoryDashboard() {
                         min="0"
                         step="0.01"
                         value={entryForm.unitPrice}
-                        onChange={(e) => setEntryForm({ ...entryForm, unitPrice: Number(e.target.value) })}
+                        onChange={(e) => setEntryForm({ ...entryForm, unitPrice: e.target.value })}
                         required
+                        placeholder="0.00"
                         style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                       />
                     </div>
@@ -1950,8 +1974,9 @@ export function InventoryDashboard() {
                         type="number"
                         min="1"
                         value={exitForm.quantity}
-                        onChange={(e) => setExitForm({ ...exitForm, quantity: Number(e.target.value) })}
+                        onChange={(e) => setExitForm({ ...exitForm, quantity: e.target.value })}
                         required
+                        placeholder="0"
                         style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                       />
                     </div>
@@ -1965,8 +1990,9 @@ export function InventoryDashboard() {
                         min="0"
                         step="0.01"
                         value={exitForm.unitPrice}
-                        onChange={(e) => setExitForm({ ...exitForm, unitPrice: Number(e.target.value) })}
+                        onChange={(e) => setExitForm({ ...exitForm, unitPrice: e.target.value })}
                         required
+                        placeholder="0.00"
                         style={{ width: '100%', height: '42px', padding: '0 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                       />
                     </div>
@@ -2328,8 +2354,9 @@ export function InventoryDashboard() {
                         min="0"
                         step="0.01"
                         value={prodForm.price}
-                        onChange={(e) => setProdForm({ ...prodForm, price: Number(e.target.value) })}
+                        onChange={(e) => setProdForm({ ...prodForm, price: e.target.value })}
                         required
+                        placeholder="0.00"
                         style={{
                           width: '100%',
                           height: '46px',
@@ -2350,7 +2377,8 @@ export function InventoryDashboard() {
                         type="number"
                         min="0"
                         value={prodForm.minimumStock}
-                        onChange={(e) => setProdForm({ ...prodForm, minimumStock: Number(e.target.value) })}
+                        onChange={(e) => setProdForm({ ...prodForm, minimumStock: e.target.value })}
+                        placeholder="0"
                         style={{
                           width: '100%',
                           height: '46px',
@@ -2706,7 +2734,7 @@ export function InventoryDashboard() {
                       type="number"
                       min="1"
                       value={entryForm.quantity}
-                      onChange={(e) => setEntryForm({ ...entryForm, quantity: Number(e.target.value) })}
+                      onChange={(e) => setEntryForm({ ...entryForm, quantity: e.target.value })}
                       required
                       style={{
                         width: '100%',
@@ -2815,7 +2843,7 @@ export function InventoryDashboard() {
                       type="number"
                       min="1"
                       value={exitForm.quantity}
-                      onChange={(e) => setExitForm({ ...exitForm, quantity: Number(e.target.value) })}
+                      onChange={(e) => setExitForm({ ...exitForm, quantity: e.target.value })}
                       required
                       style={{
                         width: '100%',
