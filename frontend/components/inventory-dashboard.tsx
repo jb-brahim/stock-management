@@ -857,23 +857,10 @@ export function InventoryDashboard() {
 
     try {
       setPasswordLoading(true)
-      setPasswordMsg({ type: '', text: '' })
-      const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:5000/api/auth/change-password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword: passwordForm.currentPassword,
-          newPassword: passwordForm.newPassword,
-        }),
+      await authApi.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
       })
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.message || 'Erreur lors du changement de mot de passe')
-      }
       setPasswordMsg({ type: 'success', text: 'Mot de passe modifié avec succès!' })
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
     } catch (err: any) {

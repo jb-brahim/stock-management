@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://stock-management-2x8r.onrender.com/api';
 
 /**
  * Custom API Client with automatic Authorization Bearer Header injection
@@ -51,6 +51,12 @@ export const authApi = {
     }),
 
   getMe: () => apiFetch<{ user: any }>('/auth/me'),
+
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    apiFetch<{ message: string }>('/auth/change-password', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 };
 
 // Product API Calls
