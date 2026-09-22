@@ -1721,7 +1721,6 @@ export function InventoryDashboard() {
                     <thead>
                       <tr>
                         <th>{t('productAndRef')}</th>
-                        <th>{t('category')}</th>
                         <th>{t('defaultOrigin')}</th>
                         <th>{t('currentStock')}</th>
                         <th>{t('minThreshold')}</th>
@@ -1734,7 +1733,7 @@ export function InventoryDashboard() {
                     <tbody>
                       {filteredProducts.length === 0 ? (
                         <tr>
-                          <td colSpan={9} style={{ textAlign: 'center', padding: '30px', color: '#9da2b0' }}>
+                          <td colSpan={8} style={{ textAlign: 'center', padding: '30px', color: '#9da2b0' }}>
                             {t('noProductsFound')}
                           </td>
                         </tr>
@@ -2392,58 +2391,14 @@ export function InventoryDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
-                        {t('defaultOrigin')}
-                      </label>
-                      <CountrySelect
-                        value={prodForm.defaultOrigin}
-                        onChange={(val) => setProdForm({ ...prodForm, defaultOrigin: val })}
-                        style={{ height: '46px', fontSize: '14px', borderRadius: '10px' }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
-                        {t('category')}
-                      </label>
-                      <input
-                        type="text"
-                        value={prodForm.category}
-                        onChange={(e) => setProdForm({ ...prodForm, category: e.target.value })}
-                        placeholder="Furniture, Électronique..."
-                        style={{
-                          width: '100%',
-                          height: '46px',
-                          padding: '0 14px',
-                          borderRadius: '10px',
-                          border: '1.5px solid #cbd5e1',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                        }}
-                      />
-                    </div>
-                  </div>
-
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
-                      {t('barcodeOptional')}
+                      {t('defaultOrigin')}
                     </label>
-                    <input
-                      type="text"
-                      value={prodForm.barcode}
-                      onChange={(e) => setProdForm({ ...prodForm, barcode: e.target.value })}
-                      placeholder="ex: 6191234567890"
-                      style={{
-                        width: '100%',
-                        height: '46px',
-                        padding: '0 14px',
-                        borderRadius: '10px',
-                        border: '1.5px solid #cbd5e1',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                      }}
+                    <CountrySelect
+                      value={prodForm.defaultOrigin}
+                      onChange={(val) => setProdForm({ ...prodForm, defaultOrigin: val })}
+                      style={{ height: '46px', fontSize: '14px', borderRadius: '10px' }}
                     />
                   </div>
                 </div>
@@ -2595,56 +2550,14 @@ export function InventoryDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
-                        {t('defaultOrigin')}
-                      </label>
-                      <CountrySelect
-                        value={editProdForm.defaultOrigin}
-                        onChange={(val) => setEditProdForm({ ...editProdForm, defaultOrigin: val })}
-                        style={{ height: '46px', fontSize: '14px', borderRadius: '10px' }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
-                        {t('category')}
-                      </label>
-                      <input
-                        type="text"
-                        value={editProdForm.category}
-                        onChange={(e) => setEditProdForm({ ...editProdForm, category: e.target.value })}
-                        style={{
-                          width: '100%',
-                          height: '46px',
-                          padding: '0 14px',
-                          borderRadius: '10px',
-                          border: '1.5px solid #cbd5e1',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                        }}
-                      />
-                    </div>
-                  </div>
-
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
-                      {t('barcodeOptional')}
+                      {t('defaultOrigin')}
                     </label>
-                    <input
-                      type="text"
-                      value={editProdForm.barcode}
-                      onChange={(e) => setEditProdForm({ ...editProdForm, barcode: e.target.value })}
-                      style={{
-                        width: '100%',
-                        height: '46px',
-                        padding: '0 14px',
-                        borderRadius: '10px',
-                        border: '1.5px solid #cbd5e1',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                      }}
+                    <CountrySelect
+                      value={editProdForm.defaultOrigin}
+                      onChange={(val) => setEditProdForm({ ...editProdForm, defaultOrigin: val })}
+                      style={{ height: '46px', fontSize: '14px', borderRadius: '10px' }}
                     />
                   </div>
                 </div>
