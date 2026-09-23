@@ -178,3 +178,12 @@ export const dashboardApi = {
     todayExits: number;
   }>('/dashboard'),
 };
+
+// Upload API Calls (Cloudinary Support)
+export const uploadApi = {
+  uploadImage: (imageData: string) =>
+    apiFetch<{ url: string; isCloudinary: boolean }>('/upload', {
+      method: 'POST',
+      body: JSON.stringify({ image: imageData }),
+    }),
+};

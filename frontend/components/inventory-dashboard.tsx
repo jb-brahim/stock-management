@@ -36,10 +36,13 @@ import {
   Trash2,
   MoreVertical,
   Download,
+  Camera,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth-context'
-import { dashboardApi, productApi, stockApi, authApi } from '@/lib/api'
+import { dashboardApi, productApi, stockApi, authApi, uploadApi } from '@/lib/api'
 
 const WORLD_COUNTRIES = [
   'Tunisie', 'France', 'Allemagne', 'Italie', 'Espagne', 'Chine', 'États-Unis', 'Turquie', 'Algérie', 'Maroc',
@@ -505,6 +508,10 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     uniqueRef: 'Référence Unique du Produit',
     productNameLabel: 'Nom du Produit',
     installApp: "Installer App",
+    productImage: 'Photo du Produit',
+    takePhoto: 'Prendre une photo (Caméra)',
+    chooseFile: 'Choisir de l’appareil / PC',
+    removePhoto: 'Supprimer la photo',
   },
   EN: {
     products: 'Products',
@@ -599,6 +606,10 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     uniqueRef: 'Unique Product Reference',
     productNameLabel: 'Product Name',
     installApp: 'Install App',
+    productImage: 'Product Photo',
+    takePhoto: 'Take a photo (Camera)',
+    chooseFile: 'Upload from device / PC',
+    removePhoto: 'Remove photo',
   },
   AR: {
     products: 'المنتجات',
@@ -693,7 +704,63 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     uniqueRef: 'مرجع المنتج الفريد',
     productNameLabel: 'اسم المنتج',
     installApp: 'تثبيت التطبيق',
+    productImage: 'صورة المنتج',
+    takePhoto: 'التقاط صورة (الكاميرا)',
+    chooseFile: 'اختيار من الجهاز',
+    removePhoto: 'حذف الصورة',
   },
+}
+
+const compressAndConvertImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = document.createElement('img')
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 600
+        const MAX_HEIGHT = 600
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, width, height)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        resolve(dataUrl)
+      }
+      img.onerror = (err) => reject(err)
+      img.src = e.target?.result as string
+    }
+    reader.onerror = (err) => reject(err)
+    reader.readAsDataURL(file)
+  })
+}
+
+const uploadImageFile = async (file: File): Promise<string> => {
+  const compressed = await compressAndConvertImage(file)
+  try {
+    const res = await uploadApi.uploadImage(compressed)
+    if (res.data?.url) {
+      return res.data.url
+    }
+  } catch (e) {
+    // Fallback to compressed base64 if offline or API error
+  }
+  return compressed
 }
 
 export function InventoryDashboard() {
@@ -816,6 +883,7 @@ export function InventoryDashboard() {
     category: '',
     minimumStock: '',
     barcode: '',
+    image: '',
   })
 
   // Entry Form State (Blank by default)
@@ -886,6 +954,7 @@ export function InventoryDashboard() {
     category: '',
     minimumStock: 0,
     barcode: '',
+    image: '',
   })
 
   const openEditModal = (p: any) => {
@@ -899,6 +968,7 @@ export function InventoryDashboard() {
       category: p.category || 'Général',
       minimumStock: p.minimumStock || 0,
       barcode: p.barcode || '',
+      image: p.image || '',
     })
     setShowEditModal(true)
     setActiveMenuProductId(null)
@@ -916,6 +986,7 @@ export function InventoryDashboard() {
         category: editProdForm.category,
         minimumStock: Number(editProdForm.minimumStock),
         barcode: editProdForm.barcode,
+        image: editProdForm.image,
       })
       setSuccessMsg('Produit mis à jour avec succès!')
       setShowEditModal(false)
@@ -1035,6 +1106,7 @@ export function InventoryDashboard() {
         category: prodForm.category,
         minimumStock: Number(prodForm.minimumStock),
         barcode: prodForm.barcode,
+        image: prodForm.image,
       })
       setSuccessMsg('Produit créé avec succès!')
       setShowProductModal(false)
@@ -1046,6 +1118,7 @@ export function InventoryDashboard() {
         category: '',
         minimumStock: '',
         barcode: '',
+        image: '',
       })
       loadData()
     } catch (err: any) {
@@ -1619,10 +1692,23 @@ export function InventoryDashboard() {
                     return (
                       <div key={p._id || p.id} className="enterprise-card">
                         <div className="card-header-row">
-                          <div>
-                            <h3 className="card-product-title">{p.name}</h3>
-                            <div className="card-product-meta">
-                              {t('ref')}: <strong>{p.reference || 'PRD-001'}</strong> · {formatPrice(p.price)}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                            {p.image ? (
+                              <img
+                                src={p.image}
+                                alt={p.name}
+                                style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0, border: '1px solid #cbd5e1' }}
+                              />
+                            ) : (
+                              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#f1f5f9', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#94a3b8' }}>
+                                <ImageIcon style={{ width: '20px', height: '20px' }} />
+                              </div>
+                            )}
+                            <div style={{ minWidth: 0 }}>
+                              <h3 className="card-product-title">{p.name}</h3>
+                              <div className="card-product-meta">
+                                {t('ref')}: <strong>{p.reference || 'PRD-001'}</strong> · {formatPrice(p.price)}
+                              </div>
                             </div>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}>
@@ -1757,9 +1843,17 @@ export function InventoryDashboard() {
                           return (
                             <tr key={p._id || p.id}>
                               <td>
-                                <div className="product-thumb purple">
-                                  <Package />
-                                </div>
+                                {p.image ? (
+                                  <img
+                                    src={p.image}
+                                    alt={p.name}
+                                    style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: '1px solid #cbd5e1', marginRight: '10px' }}
+                                  />
+                                ) : (
+                                  <div className="product-thumb purple">
+                                    <Package />
+                                  </div>
+                                )}
                                 <div className="product-name">
                                   <strong>{p.name}</strong>
                                   <span>{p.reference} {p.barcode ? `· ${p.barcode}` : ''}</span>
@@ -2405,6 +2499,122 @@ export function InventoryDashboard() {
                     </div>
                   </div>
 
+                  {/* Photo Upload / Camera Field */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
+                      📷 {t('productImage')}
+                    </label>
+
+                    {prodForm.image ? (
+                      <div style={{ position: 'relative', width: '100%', height: '150px', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid #cbd5e1' }}>
+                        <img src={prodForm.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => setProdForm({ ...prodForm, image: '' })}
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            background: 'rgba(239, 68, 68, 0.9)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          }}
+                        >
+                          <Trash2 style={{ width: '14px', height: '14px' }} />
+                          <span>{t('removePhoto')}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <label
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            padding: '14px 10px',
+                            borderRadius: '12px',
+                            border: '2px dashed #818cf8',
+                            background: '#f5f3ff',
+                            color: '#4f46e5',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Camera style={{ width: '22px', height: '22px', color: '#6366f1' }} />
+                          <span>{t('takePhoto')}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            style={{ display: 'none' }}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                try {
+                                  const imageUrl = await uploadImageFile(file)
+                                  setProdForm({ ...prodForm, image: imageUrl })
+                                } catch (err) {
+                                  setErrorMsg('Erreur lors du chargement de la photo')
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+
+                        <label
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            padding: '14px 10px',
+                            borderRadius: '12px',
+                            border: '2px dashed #cbd5e1',
+                            background: '#f8fafc',
+                            color: '#475569',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Upload style={{ width: '22px', height: '22px', color: '#64748b' }} />
+                          <span>{t('chooseFile')}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                try {
+                                  const imageUrl = await uploadImageFile(file)
+                                  setProdForm({ ...prodForm, image: imageUrl })
+                                } catch (err) {
+                                  setErrorMsg('Erreur lors du chargement du fichier')
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
                       {t('defaultOrigin')}
@@ -2562,6 +2772,122 @@ export function InventoryDashboard() {
                         }}
                       />
                     </div>
+                  </div>
+
+                  {/* Photo Upload / Camera Field */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
+                      📷 {t('productImage')}
+                    </label>
+
+                    {editProdForm.image ? (
+                      <div style={{ position: 'relative', width: '100%', height: '150px', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid #cbd5e1' }}>
+                        <img src={editProdForm.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => setEditProdForm({ ...editProdForm, image: '' })}
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            background: 'rgba(239, 68, 68, 0.9)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          }}
+                        >
+                          <Trash2 style={{ width: '14px', height: '14px' }} />
+                          <span>{t('removePhoto')}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <label
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            padding: '14px 10px',
+                            borderRadius: '12px',
+                            border: '2px dashed #818cf8',
+                            background: '#f5f3ff',
+                            color: '#4f46e5',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Camera style={{ width: '22px', height: '22px', color: '#6366f1' }} />
+                          <span>{t('takePhoto')}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            style={{ display: 'none' }}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                try {
+                                  const imageUrl = await uploadImageFile(file)
+                                  setEditProdForm({ ...editProdForm, image: imageUrl })
+                                } catch (err) {
+                                  setErrorMsg('Erreur lors du chargement de la photo')
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+
+                        <label
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            padding: '14px 10px',
+                            borderRadius: '12px',
+                            border: '2px dashed #cbd5e1',
+                            background: '#f8fafc',
+                            color: '#475569',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Upload style={{ width: '22px', height: '22px', color: '#64748b' }} />
+                          <span>{t('chooseFile')}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                try {
+                                  const imageUrl = await uploadImageFile(file)
+                                  setEditProdForm({ ...editProdForm, image: imageUrl })
+                                } catch (err) {
+                                  setErrorMsg('Erreur lors du chargement du fichier')
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                    )}
                   </div>
 
                   <div>

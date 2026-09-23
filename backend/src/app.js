@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
@@ -39,9 +40,9 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth', authLimiter);
 
-// Express Body Parsers
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Express Body Parsers with 10MB limit for image uploads
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Health Check Route
 app.get('/health', (req, res) => {
@@ -57,12 +58,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Root fallback mounts (Resilience for frontend calls without /api prefix)
 app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 app.use('/stock', stockRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/upload', uploadRoutes);
 
 // 404 & Error Handling
 app.use(notFound);
