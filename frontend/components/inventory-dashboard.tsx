@@ -873,6 +873,7 @@ export function InventoryDashboard() {
   const [showEntryModal, setShowEntryModal] = useState(false)
   const [showExitModal, setShowExitModal] = useState(false)
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
+  const [selectedEnlargedImage, setSelectedEnlargedImage] = useState<string | null>(null)
 
   // Product Form State (Blank by default)
   const [prodForm, setProdForm] = useState({
@@ -1692,16 +1693,28 @@ export function InventoryDashboard() {
                     return (
                       <div key={p._id || p.id} className="enterprise-card">
                         <div className="card-header-row">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: 0 }}>
                             {p.image ? (
                               <img
                                 src={p.image}
                                 alt={p.name}
-                                style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0, border: '1px solid #cbd5e1' }}
+                                title="Cliquer pour agrandir l'image"
+                                onClick={() => setSelectedEnlargedImage(p.image)}
+                                style={{
+                                  width: '100px',
+                                  height: '100px',
+                                  borderRadius: '14px',
+                                  objectFit: 'cover',
+                                  flexShrink: 0,
+                                  border: '1.5px solid #cbd5e1',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.15s ease',
+                                }}
                               />
                             ) : (
-                              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#f1f5f9', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#94a3b8' }}>
-                                <ImageIcon style={{ width: '20px', height: '20px' }} />
+                              <div style={{ width: '100px', height: '100px', borderRadius: '14px', background: '#f1f5f9', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#94a3b8', border: '1.5px solid #e2e8f0' }}>
+                                <ImageIcon style={{ width: '36px', height: '36px' }} />
                               </div>
                             )}
                             <div style={{ minWidth: 0 }}>
@@ -1847,11 +1860,23 @@ export function InventoryDashboard() {
                                   <img
                                     src={p.image}
                                     alt={p.name}
-                                    style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: '1px solid #cbd5e1', marginRight: '10px' }}
+                                    title="Cliquer pour agrandir l'image"
+                                    onClick={() => setSelectedEnlargedImage(p.image)}
+                                    style={{
+                                      width: '68px',
+                                      height: '68px',
+                                      borderRadius: '12px',
+                                      objectFit: 'cover',
+                                      flexShrink: 0,
+                                      border: '1.5px solid #cbd5e1',
+                                      marginRight: '12px',
+                                      cursor: 'pointer',
+                                      boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                                    }}
                                   />
                                 ) : (
-                                  <div className="product-thumb purple">
-                                    <Package />
+                                  <div className="product-thumb purple" style={{ width: '68px', height: '68px', borderRadius: '12px', flexShrink: 0, marginRight: '12px' }}>
+                                    <Package style={{ width: '28px', height: '28px' }} />
                                   </div>
                                 )}
                                 <div className="product-name">
@@ -3258,6 +3283,8 @@ export function InventoryDashboard() {
           <span>{t('more')}</span>
           {(activeTab === 'Historique' || activeTab === 'Paramètres') && <div className="bottom-nav-indicator" />}
         </button>
+      </nav>
+
       {/* Floating PWA Install Notification Banner */}
       {deferredPrompt && !dismissedInstallBanner && (
         <div
@@ -3338,7 +3365,69 @@ export function InventoryDashboard() {
           </div>
         </div>
       )}
-      </nav>
+
+      {/* Full-Screen Image Lightbox Modal */}
+      {selectedEnlargedImage && (
+        <div
+          onClick={() => setSelectedEnlargedImage(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            cursor: 'zoom-out',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              background: '#000',
+            }}
+          >
+            <button
+              onClick={() => setSelectedEnlargedImage(null)}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: '#fff',
+                border: 'none',
+                display: 'grid',
+                placeItems: 'center',
+                cursor: 'pointer',
+                zIndex: 10,
+              }}
+            >
+              <X style={{ width: '20px', height: '20px' }} />
+            </button>
+            <img
+              src={selectedEnlargedImage}
+              alt="Enlarged view"
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '85vh',
+                objectFit: 'contain',
+                display: 'block',
+              }}
+            />
+          </div>
+        </div>
+      )}
     </main>
   )
 }
