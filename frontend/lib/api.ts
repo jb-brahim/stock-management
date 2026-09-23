@@ -85,6 +85,7 @@ export const productApi = {
     name: string;
     description?: string;
     price: number;
+    initialQuantity?: number;
     defaultOrigin?: string;
     category?: string;
     minimumStock?: number;

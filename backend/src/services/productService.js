@@ -15,6 +15,8 @@ class ProductService {
       defaultOrigin,
       category,
       minimumStock,
+      initialQuantity,
+      quantity,
       image,
     } = productData;
 
@@ -36,18 +38,33 @@ class ProductService {
       throw error;
     }
 
+    const startQty = Number(initialQuantity !== undefined ? initialQuantity : (quantity !== undefined ? quantity : 0));
+    const safeQty = isNaN(startQty) || startQty < 0 ? 0 : startQty;
+
     const product = await Product.create({
       reference: finalRef,
       name,
       description: description || '',
       price,
-      quantity: 0, // Quantity must be changed via stock movements
+      quantity: safeQty,
       defaultOrigin: defaultOrigin || '',
       category: category || 'General',
-      minimumStock: minimumStock !== undefined ? minimumStock : 0,
+      minimumStock: (minimumStock !== undefined && minimumStock !== null && Number(minimumStock) > 0) ? Number(minimumStock) : 5,
       image: image || '',
       createdBy: userId,
     });
+
+    if (safeQty > 0) {
+      await StockMovement.create({
+        product: product._id,
+        type: 'ENTRY',
+        quantity: safeQty,
+        origin: defaultOrigin || 'Stock Initial',
+        unitPrice: price || 0,
+        note: 'Stock initial à la création du produit',
+        createdBy: userId,
+      });
+    }
 
     return product;
   }

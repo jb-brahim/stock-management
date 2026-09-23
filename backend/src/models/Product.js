@@ -45,7 +45,7 @@ const productSchema = new mongoose.Schema(
     minimumStock: {
       type: Number,
       min: [0, 'Minimum stock cannot be negative'],
-      default: 0,
+      default: 5,
     },
     image: {
       type: String,
@@ -76,7 +76,8 @@ productSchema.virtual('stockStatus').get(function () {
   if (this.quantity === 0) {
     return 'OUT_OF_STOCK';
   }
-  if (this.quantity <= this.minimumStock) {
+  const threshold = this.minimumStock && this.minimumStock > 0 ? this.minimumStock : 5;
+  if (this.quantity <= threshold) {
     return 'LOW_STOCK';
   }
   return 'IN_STOCK';

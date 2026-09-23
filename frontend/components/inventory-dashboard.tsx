@@ -397,14 +397,14 @@ function ProductSelect({
   )
 }
 
-function StatusBadge({ stock, threshold, lang = 'FR' }: { stock: number; threshold: number; lang?: Language }) {
+function StatusBadge({ stock, threshold = 5, lang = 'FR' }: { stock: number; threshold?: number; lang?: Language }) {
+  const effectiveThreshold = threshold && threshold > 0 ? threshold : 5
   const t = (key: string) => DICTIONARY[lang]?.[key] || DICTIONARY['FR']?.[key] || key
-  const status = stock === 0 ? t('outOfStock') : stock <= threshold ? t('lowStock') : t('inStock')
+  const status = stock === 0 ? t('outOfStock') : stock <= effectiveThreshold ? t('lowStock') : t('inStock')
   return (
     <span
-      className={`status-badge ${
-        stock === 0 ? 'status-danger' : stock <= threshold ? 'status-warning' : 'status-success'
-      }`}
+      className={`status-badge ${stock === 0 ? 'status-danger' : stock <= effectiveThreshold ? 'status-warning' : 'status-success'
+        }`}
     >
       <span className="status-dot" />
       {status}
@@ -504,7 +504,8 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     productSub: 'Catalogue Produit · Remplissez les informations ci-dessous',
     editProductSub: 'Modifiez les détails du catalogue ci-dessous',
     barcodeOptional: 'Code-barres (Optionnel)',
-    minStockThreshold: 'Seuil Stock Faible',
+    minStockThreshold: 'Seuil Stock',
+    initialStockLabel: 'Stock Initial (Quantité)',
     uniqueRef: 'Référence Unique du Produit',
     productNameLabel: 'Nom du Produit',
     installApp: "Installer App",
@@ -602,7 +603,7 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     productSub: 'Product Catalog · Fill in the details below',
     editProductSub: 'Modify catalog details below',
     barcodeOptional: 'Barcode (Optional)',
-    minStockThreshold: 'Low Stock Threshold',
+    minStockThreshold: ' Stock Threshold',
     uniqueRef: 'Unique Product Reference',
     productNameLabel: 'Product Name',
     installApp: 'Install App',
@@ -700,7 +701,7 @@ const DICTIONARY: Record<Language, Record<string, string>> = {
     productSub: 'كتالوج المنتجات · أدخل التفاصيل أدناه',
     editProductSub: 'تعديل بيانات المنتج أدناه',
     barcodeOptional: 'الرمز الشريط / الباركود (اختياري)',
-    minStockThreshold: 'حد المخزون المنخفض',
+    minStockThreshold: 'حد المخزون ',
     uniqueRef: 'مرجع المنتج الفريد',
     productNameLabel: 'اسم المنتج',
     installApp: 'تثبيت التطبيق',
@@ -800,8 +801,8 @@ export function InventoryDashboard() {
         lang === 'AR'
           ? 'التطبيق جاهز للتثبيت! يمكنك تثبيته مباشرة من القائمة العليا للمتصفح (Install App / Add to Home Screen).'
           : lang === 'EN'
-          ? 'App is ready for installation! You can install it via browser menu (Install App / Add to Home Screen).'
-          : "L'application est prête à être installée! Vous pouvez l'installer depuis le menu de votre navigateur (Installer l'application / Ajouter à l'écran d'accueil)."
+            ? 'App is ready for installation! You can install it via browser menu (Install App / Add to Home Screen).'
+            : "L'application est prête à être installée! Vous pouvez l'installer depuis le menu de votre navigateur (Installer l'application / Ajouter à l'écran d'accueil)."
       )
     }
   }
@@ -880,10 +881,10 @@ export function InventoryDashboard() {
     reference: '',
     name: '',
     price: '',
+    initialQuantity: '',
     defaultOrigin: 'Tunisie',
     category: '',
     minimumStock: '',
-    barcode: '',
     image: '',
   })
 
@@ -1100,10 +1101,10 @@ export function InventoryDashboard() {
       reference: '',
       name: '',
       price: '',
+      initialQuantity: '',
       defaultOrigin: 'Tunisie',
       category: 'Général',
       minimumStock: '',
-      barcode: '',
       image: '',
     })
     setShowProductModal(true)
@@ -1118,6 +1119,7 @@ export function InventoryDashboard() {
         reference: prodForm.reference.trim(),
         name: prodForm.name,
         price: Number(prodForm.price),
+        initialQuantity: Number(prodForm.initialQuantity || 0),
         defaultOrigin: prodForm.defaultOrigin,
         category: prodForm.category || 'Général',
         minimumStock: Number(prodForm.minimumStock || 0),
@@ -1129,10 +1131,10 @@ export function InventoryDashboard() {
         reference: '',
         name: '',
         price: '',
+        initialQuantity: '',
         defaultOrigin: 'Tunisie',
         category: '',
         minimumStock: '',
-        barcode: '',
         image: '',
       })
       loadData()
@@ -1740,9 +1742,8 @@ export function InventoryDashboard() {
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}>
                             <span
-                              className={`badge-status ${
-                                isStockEmpty ? 'badge-status-red' : isLowStock ? 'badge-status-orange' : 'badge-status-green'
-                              }`}
+                              className={`badge-status ${isStockEmpty ? 'badge-status-red' : isLowStock ? 'badge-status-orange' : 'badge-status-green'
+                                }`}
                             >
                               ● {isStockEmpty ? t('outOfStock') : isLowStock ? t('lowStock') : t('inStock')}
                             </span>
@@ -2517,14 +2518,14 @@ export function InventoryDashboard() {
 
                     <div>
                       <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
-                        {t('minStockThreshold')}
+                        {t('initialStockLabel')}
                       </label>
                       <input
                         type="number"
                         min="0"
-                        value={prodForm.minimumStock}
-                        onChange={(e) => setProdForm({ ...prodForm, minimumStock: e.target.value })}
-                        placeholder="0"
+                        value={prodForm.initialQuantity}
+                        onChange={(e) => setProdForm({ ...prodForm, initialQuantity: e.target.value })}
+                        placeholder="ex: 10"
                         style={{
                           width: '100%',
                           height: '46px',
@@ -2537,6 +2538,8 @@ export function InventoryDashboard() {
                       />
                     </div>
                   </div>
+
+
 
                   {/* Photo Upload / Camera Field */}
                   <div>
@@ -2766,51 +2769,27 @@ export function InventoryDashboard() {
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
-                        {t('unitPrice')} *
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={editProdForm.price}
-                        onChange={(e) => setEditProdForm({ ...editProdForm, price: Number(e.target.value) })}
-                        required
-                        style={{
-                          width: '100%',
-                          height: '46px',
-                          padding: '0 14px',
-                          borderRadius: '10px',
-                          border: '1.5px solid #cbd5e1',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
-                        {t('minStockThreshold')} *
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={editProdForm.minimumStock}
-                        onChange={(e) => setEditProdForm({ ...editProdForm, minimumStock: Number(e.target.value) })}
-                        required
-                        style={{
-                          width: '100%',
-                          height: '46px',
-                          padding: '0 14px',
-                          borderRadius: '10px',
-                          border: '1.5px solid #cbd5e1',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                        }}
-                      />
-                    </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>
+                      {t('unitPrice')} *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={editProdForm.price}
+                      onChange={(e) => setEditProdForm({ ...editProdForm, price: Number(e.target.value) })}
+                      required
+                      style={{
+                        width: '100%',
+                        height: '46px',
+                        padding: '0 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #cbd5e1',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                      }}
+                    />
                   </div>
 
                   {/* Photo Upload / Camera Field */}
@@ -3343,8 +3322,8 @@ export function InventoryDashboard() {
               {lang === 'AR'
                 ? 'احصل على إشعارات وتطبيقا سريعا على جهازك'
                 : lang === 'EN'
-                ? 'Fast access directly from your desktop or phone'
-                : "Accès rapide depuis votre ordinateur ou téléphone."}
+                  ? 'Fast access directly from your desktop or phone'
+                  : "Accès rapide depuis votre ordinateur ou téléphone."}
             </p>
           </div>
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
