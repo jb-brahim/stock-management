@@ -194,6 +194,11 @@ input {
   background: #f7f6ff;
 }
 
+.nav-logout-btn:hover {
+  color: #e15e72 !important;
+  background: #fff1f2 !important;
+}
+
 .nav-active {
   color: #6256eb;
   background: #f0efff;

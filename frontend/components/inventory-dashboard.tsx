@@ -1447,15 +1447,29 @@ export function InventoryDashboard() {
               {count && <small>{count}</small>}
             </button>
           ))}
+          <button
+            className="nav-item nav-logout-btn"
+            onClick={() => {
+              setMenuOpen(false)
+              logout()
+            }}
+            style={{
+              color: '#e15e72',
+              marginTop: '10px',
+            }}
+          >
+            <LogOut style={{ width: '16px', height: '16px', color: '#e15e72' }} />
+            <span>{t('logout')}</span>
+          </button>
         </nav>
         <div className="sidebar-bottom">
           <div className="profile">
             <div className="profile-avatar">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'US'}</div>
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <strong>{user?.name || (user?.role === 'admin' ? t('adminRole') : t('manager'))}</strong>
               <span>{user?.role === 'admin' ? t('adminRole') : t('manager')}</span>
             </div>
-            <button onClick={logout} title={t('logout')} style={{ border: 0, background: 'none', cursor: 'pointer' }}>
+            <button onClick={logout} title={t('logout')} style={{ border: 0, background: 'none', cursor: 'pointer', padding: '4px' }}>
               <LogOut style={{ width: '16px', color: '#e15e72' }} />
             </button>
           </div>
