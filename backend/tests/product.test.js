@@ -140,4 +140,34 @@ describe('Product API Endpoints', () => {
     expect(adminDeactRes.statusCode).toEqual(200);
     expect(adminDeactRes.body.data.product.isActive).toBe(false);
   });
+
+  it('should isolate product lists between different users and allow same reference per account', async () => {
+    // Admin creates PRD-001
+    await request(app)
+      .post('/api/products')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ ...sampleProduct, reference: 'REF-SHARED' });
+
+    // User creates PRD-002 with same reference REF-SHARED
+    const userCreateRes = await request(app)
+      .post('/api/products')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ ...sampleProduct, name: 'User Product', reference: 'REF-SHARED' });
+
+    expect(userCreateRes.statusCode).toEqual(201);
+
+    // Admin fetches products -> sees 1 product
+    const adminList = await request(app)
+      .get('/api/products')
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(adminList.body.data.length).toEqual(1);
+    expect(adminList.body.data[0].name).toEqual('Chaise de bureau');
+
+    // User fetches products -> sees 1 product (User Product)
+    const userList = await request(app)
+      .get('/api/products')
+      .set('Authorization', `Bearer ${userToken}`);
+    expect(userList.body.data.length).toEqual(1);
+    expect(userList.body.data[0].name).toEqual('User Product');
+  });
 });

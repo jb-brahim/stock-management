@@ -22,7 +22,7 @@ const createProduct = async (req, res, next) => {
  */
 const getProducts = async (req, res, next) => {
   try {
-    const result = await productService.getProducts(req.query);
+    const result = await productService.getProducts(req.query, req.user.id);
     return successResponse(res, 200, 'Products fetched successfully', result.products, {
       pagination: result.pagination,
     });
@@ -38,7 +38,7 @@ const getProducts = async (req, res, next) => {
  */
 const getProductById = async (req, res, next) => {
   try {
-    const product = await productService.getProductById(req.params.id);
+    const product = await productService.getProductById(req.params.id, req.user.id);
     return successResponse(res, 200, 'Product details fetched successfully', { product });
   } catch (error) {
     next(error);
@@ -52,7 +52,7 @@ const getProductById = async (req, res, next) => {
  */
 const updateProduct = async (req, res, next) => {
   try {
-    const product = await productService.updateProduct(req.params.id, req.body);
+    const product = await productService.updateProduct(req.params.id, req.body, req.user.id);
     return successResponse(res, 200, 'Product updated successfully', { product });
   } catch (error) {
     next(error);
@@ -66,7 +66,7 @@ const updateProduct = async (req, res, next) => {
  */
 const deactivateProduct = async (req, res, next) => {
   try {
-    const product = await productService.deactivateProduct(req.params.id);
+    const product = await productService.deactivateProduct(req.params.id, req.user.id);
     return successResponse(res, 200, 'Product deactivated successfully', { product });
   } catch (error) {
     next(error);
@@ -80,7 +80,7 @@ const deactivateProduct = async (req, res, next) => {
  */
 const activateProduct = async (req, res, next) => {
   try {
-    const product = await productService.activateProduct(req.params.id);
+    const product = await productService.activateProduct(req.params.id, req.user.id);
     return successResponse(res, 200, 'Product activated successfully', { product });
   } catch (error) {
     next(error);
@@ -94,7 +94,7 @@ const activateProduct = async (req, res, next) => {
  */
 const getProductByBarcode = async (req, res, next) => {
   try {
-    const product = await productService.getProductByBarcode(req.params.barcode);
+    const product = await productService.getProductByBarcode(req.params.barcode, req.user.id);
     return successResponse(res, 200, 'Product fetched by barcode successfully', { product });
   } catch (error) {
     next(error);
@@ -108,7 +108,7 @@ const getProductByBarcode = async (req, res, next) => {
  */
 const getProductMovements = async (req, res, next) => {
   try {
-    const result = await productService.getProductMovements(req.params.id, req.query);
+    const result = await productService.getProductMovements(req.params.id, req.query, req.user.id);
     return successResponse(
       res,
       200,
@@ -131,7 +131,7 @@ const getProductMovements = async (req, res, next) => {
  */
 const deleteProduct = async (req, res, next) => {
   try {
-    const result = await productService.deleteProduct(req.params.id);
+    const result = await productService.deleteProduct(req.params.id, req.user.id);
     return successResponse(res, 200, result.message, result);
   } catch (error) {
     next(error);

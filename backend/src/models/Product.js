@@ -5,7 +5,6 @@ const productSchema = new mongoose.Schema(
     reference: {
       type: String,
       required: [true, 'Product reference is required'],
-      unique: true,
       trim: true,
       uppercase: true,
       index: true,
@@ -74,6 +73,10 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Compound index to guarantee reference uniqueness PER USER
+productSchema.index({ createdBy: 1, reference: 1 }, { unique: true });
+productSchema.index({ createdBy: 1, barcode: 1 }, { unique: true, sparse: true });
 
 // Virtual for calculating current stock status
 productSchema.virtual('stockStatus').get(function () {

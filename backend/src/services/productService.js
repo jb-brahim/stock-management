@@ -20,6 +20,7 @@ class ProductService {
     } = productData;
 
     const existingProduct = await Product.findOne({
+      createdBy: userId,
       reference: reference.toUpperCase().trim(),
     });
     if (existingProduct) {
@@ -29,7 +30,10 @@ class ProductService {
     }
 
     if (barcode) {
-      const existingBarcode = await Product.findOne({ barcode: barcode.trim() });
+      const existingBarcode = await Product.findOne({
+        createdBy: userId,
+        barcode: barcode.trim(),
+      });
       if (existingBarcode) {
         const error = new Error(`Product with barcode '${barcode}' already exists`);
         error.statusCode = 409;
@@ -55,11 +59,15 @@ class ProductService {
   }
 
   /**
-   * Get paginated & filtered products list
+   * Get paginated & filtered products list (scoped to authenticated user)
    */
-  async getProducts(queryParams) {
+  async getProducts(queryParams, userId) {
     const { page, limit, skip } = getPaginationParams(queryParams);
     const filter = {};
+
+    if (userId) {
+      filter.createdBy = userId;
+    }
 
     // Filter by active status (default to active products unless specified)
     if (queryParams.isActive !== undefined) {
@@ -115,10 +123,13 @@ class ProductService {
   }
 
   /**
-   * Get product by ID
+   * Get product by ID (scoped to authenticated user)
    */
-  async getProductById(productId) {
-    const product = await Product.findById(productId).populate('createdBy', 'name email');
+  async getProductById(productId, userId) {
+    const query = { _id: productId };
+    if (userId) query.createdBy = userId;
+
+    const product = await Product.findOne(query).populate('createdBy', 'name email');
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -130,8 +141,11 @@ class ProductService {
   /**
    * Update product metadata (ignoring quantity changes)
    */
-  async updateProduct(productId, updateData) {
-    const product = await Product.findById(productId);
+  async updateProduct(productId, updateData, userId) {
+    const query = { _id: productId };
+    if (userId) query.createdBy = userId;
+
+    const product = await Product.findOne(query);
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -150,10 +164,13 @@ class ProductService {
     } = updateData;
 
     if (barcode && barcode !== product.barcode) {
-      const existingBarcode = await Product.findOne({
+      const barcodeQuery = {
         barcode: barcode.trim(),
         _id: { $ne: productId },
-      });
+      };
+      if (userId) barcodeQuery.createdBy = userId;
+
+      const existingBarcode = await Product.findOne(barcodeQuery);
       if (existingBarcode) {
         const error = new Error(`Barcode '${barcode}' is already in use by another product`);
         error.statusCode = 409;
@@ -177,8 +194,11 @@ class ProductService {
   /**
    * Deactivate product
    */
-  async deactivateProduct(productId) {
-    const product = await Product.findById(productId);
+  async deactivateProduct(productId, userId) {
+    const query = { _id: productId };
+    if (userId) query.createdBy = userId;
+
+    const product = await Product.findOne(query);
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -192,8 +212,11 @@ class ProductService {
   /**
    * Activate product
    */
-  async activateProduct(productId) {
-    const product = await Product.findById(productId);
+  async activateProduct(productId, userId) {
+    const query = { _id: productId };
+    if (userId) query.createdBy = userId;
+
+    const product = await Product.findOne(query);
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -205,13 +228,13 @@ class ProductService {
   }
 
   /**
-   * Find product by barcode scanner value
+   * Find product by barcode scanner value (scoped to user)
    */
-  async getProductByBarcode(barcode) {
-    const product = await Product.findOne({ barcode: barcode.trim(), isActive: true }).populate(
-      'createdBy',
-      'name email'
-    );
+  async getProductByBarcode(barcode, userId) {
+    const query = { barcode: barcode.trim(), isActive: true };
+    if (userId) query.createdBy = userId;
+
+    const product = await Product.findOne(query).populate('createdBy', 'name email');
     if (!product) {
       const error = new Error(`Product with barcode '${barcode}' not found`);
       error.statusCode = 404;
@@ -221,10 +244,13 @@ class ProductService {
   }
 
   /**
-   * Get chronological stock history for a single product
+   * Get chronological stock history for a single product (scoped to user)
    */
-  async getProductMovements(productId, queryParams) {
-    const product = await Product.findById(productId);
+  async getProductMovements(productId, queryParams, userId) {
+    const query = { _id: productId };
+    if (userId) query.createdBy = userId;
+
+    const product = await Product.findOne(query);
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -233,6 +259,7 @@ class ProductService {
 
     const { page, limit, skip } = getPaginationParams(queryParams);
     const filter = { product: productId };
+    if (userId) filter.createdBy = userId;
 
     const total = await StockMovement.countDocuments(filter);
     const movements = await StockMovement.find(filter)
@@ -257,8 +284,11 @@ class ProductService {
   /**
    * Delete product
    */
-  async deleteProduct(productId) {
-    const product = await Product.findById(productId);
+  async deleteProduct(productId, userId) {
+    const query = { _id: productId };
+    if (userId) query.createdBy = userId;
+
+    const product = await Product.findOne(query);
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;

@@ -44,7 +44,10 @@ class StockService {
       throw error;
     }
 
-    const product = await Product.findById(productId);
+    const productQuery = { _id: productId };
+    if (userId) productQuery.createdBy = userId;
+
+    const product = await Product.findOne(productQuery);
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -107,7 +110,10 @@ class StockService {
       throw error;
     }
 
-    const product = await Product.findById(productId);
+    const productQuery = { _id: productId };
+    if (userId) productQuery.createdBy = userId;
+
+    const product = await Product.findOne(productQuery);
     if (!product) {
       const error = new Error('Product not found');
       error.statusCode = 404;
@@ -165,11 +171,15 @@ class StockService {
   }
 
   /**
-   * Get all stock movements (paginated & filtered)
+   * Get all stock movements (paginated & filtered, scoped to user)
    */
-  async getAllMovements(queryParams) {
+  async getAllMovements(queryParams, userId) {
     const { page, limit, skip } = getPaginationParams(queryParams);
     const filter = {};
+
+    if (userId) {
+      filter.createdBy = userId;
+    }
 
     if (queryParams.type) {
       filter.type = queryParams.type.toUpperCase();
@@ -213,10 +223,13 @@ class StockService {
   }
 
   /**
-   * Get movement by ID
+   * Get movement by ID (scoped to user)
    */
-  async getMovementById(movementId) {
-    const movement = await StockMovement.findById(movementId)
+  async getMovementById(movementId, userId) {
+    const query = { _id: movementId };
+    if (userId) query.createdBy = userId;
+
+    const movement = await StockMovement.findOne(query)
       .populate('product', 'reference name price quantity defaultOrigin category')
       .populate('createdBy', 'name email');
 

@@ -36,7 +36,7 @@ const recordExit = async (req, res, next) => {
  */
 const getAllMovements = async (req, res, next) => {
   try {
-    const result = await stockService.getAllMovements(req.query);
+    const result = await stockService.getAllMovements(req.query, req.user.id);
     return successResponse(res, 200, 'Stock movements fetched successfully', result.movements, {
       pagination: result.pagination,
     });
@@ -52,7 +52,7 @@ const getAllMovements = async (req, res, next) => {
  */
 const getMovementById = async (req, res, next) => {
   try {
-    const movement = await stockService.getMovementById(req.params.id);
+    const movement = await stockService.getMovementById(req.params.id, req.user.id);
     return successResponse(res, 200, 'Stock movement details fetched successfully', { movement });
   } catch (error) {
     next(error);

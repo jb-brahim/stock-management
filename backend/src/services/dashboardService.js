@@ -1,14 +1,18 @@
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const StockMovement = require('../models/StockMovement');
 
 class DashboardService {
   /**
-   * Get overall dashboard statistics
+   * Get overall dashboard statistics (scoped to user)
    */
-  async getDashboardStats() {
+  async getDashboardStats(userId) {
     // Start of today in UTC
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
+
+    const userObjectId = userId ? new mongoose.Types.ObjectId(userId) : null;
+    const userFilter = userObjectId ? { createdBy: userObjectId } : {};
 
     const [
       totalProducts,
@@ -19,16 +23,17 @@ class DashboardService {
       todayEntriesAggregate,
       todayExitsAggregate,
     ] = await Promise.all([
-      Product.countDocuments({}),
-      Product.countDocuments({ isActive: true }),
-      Product.countDocuments({ isActive: true, quantity: 0 }),
+      Product.countDocuments(userFilter),
+      Product.countDocuments({ ...userFilter, isActive: true }),
+      Product.countDocuments({ ...userFilter, isActive: true, quantity: 0 }),
       Product.countDocuments({
+        ...userFilter,
         isActive: true,
         quantity: { $gt: 0 },
         $expr: { $lte: ['$quantity', '$minimumStock'] },
       }),
       Product.aggregate([
-        { $match: { isActive: true } },
+        { $match: { ...userFilter, isActive: true } },
         {
           $group: {
             _id: null,
@@ -40,6 +45,7 @@ class DashboardService {
       StockMovement.aggregate([
         {
           $match: {
+            ...userFilter,
             type: 'ENTRY',
             createdAt: { $gte: startOfToday },
           },
@@ -56,6 +62,7 @@ class DashboardService {
       StockMovement.aggregate([
         {
           $match: {
+            ...userFilter,
             type: 'EXIT',
             createdAt: { $gte: startOfToday },
           },
