@@ -19,30 +19,34 @@ class ProductService {
       image,
     } = productData;
 
+    let finalRef = reference && reference.trim() ? reference.toUpperCase().trim() : `PRD-${Date.now().toString().slice(-6)}`;
+
     const existingProduct = await Product.findOne({
       createdBy: userId,
-      reference: reference.toUpperCase().trim(),
+      reference: finalRef,
     });
     if (existingProduct) {
-      const error = new Error(`Product reference '${reference.toUpperCase()}' already exists`);
+      const error = new Error(`Product reference '${finalRef}' already exists`);
       error.statusCode = 409;
       throw error;
     }
 
-    if (barcode) {
+    const cleanBarcode = barcode && barcode.trim() ? barcode.trim() : undefined;
+
+    if (cleanBarcode) {
       const existingBarcode = await Product.findOne({
         createdBy: userId,
-        barcode: barcode.trim(),
+        barcode: cleanBarcode,
       });
       if (existingBarcode) {
-        const error = new Error(`Product with barcode '${barcode}' already exists`);
+        const error = new Error(`Product with barcode '${cleanBarcode}' already exists`);
         error.statusCode = 409;
         throw error;
       }
     }
 
     const product = await Product.create({
-      reference: reference.toUpperCase().trim(),
+      reference: finalRef,
       name,
       description: description || '',
       price,
@@ -50,7 +54,7 @@ class ProductService {
       defaultOrigin: defaultOrigin || '',
       category: category || 'General',
       minimumStock: minimumStock !== undefined ? minimumStock : 0,
-      barcode: barcode || undefined,
+      barcode: cleanBarcode,
       image: image || '',
       createdBy: userId,
     });

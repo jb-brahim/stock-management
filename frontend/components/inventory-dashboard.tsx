@@ -1094,18 +1094,39 @@ export function InventoryDashboard() {
     }
   }
 
+  // Helper to open Add Product modal with auto-generated reference
+  const openAddProductModal = () => {
+    const nextNum = (productsList.length + 1).toString().padStart(4, '0')
+    let autoRef = `PRD-${nextNum}`
+    if (productsList.some((p: any) => p.reference?.toUpperCase() === autoRef)) {
+      autoRef = `PRD-${Date.now().toString().slice(-4)}`
+    }
+    setProdForm({
+      reference: autoRef,
+      name: '',
+      price: '',
+      defaultOrigin: 'Tunisie',
+      category: 'Général',
+      minimumStock: '',
+      barcode: '',
+      image: '',
+    })
+    setShowProductModal(true)
+  }
+
   // Handle Product Creation
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg('')
+    const finalRef = prodForm.reference.trim() || `PRD-${Date.now().toString().slice(-4)}`
     try {
       await productApi.createProduct({
-        reference: prodForm.reference,
+        reference: finalRef,
         name: prodForm.name,
         price: Number(prodForm.price),
         defaultOrigin: prodForm.defaultOrigin,
-        category: prodForm.category,
-        minimumStock: Number(prodForm.minimumStock),
+        category: prodForm.category || 'Général',
+        minimumStock: Number(prodForm.minimumStock || 0),
         barcode: prodForm.barcode,
         image: prodForm.image,
       })
@@ -1644,7 +1665,7 @@ export function InventoryDashboard() {
               {/* Floating Action Button (FAB) at Bottom Right */}
               <button
                 className="floating-add-btn"
-                onClick={() => setShowProductModal(true)}
+                onClick={openAddProductModal}
                 title={t('newProduct')}
                 aria-label={t('newProduct')}
               >

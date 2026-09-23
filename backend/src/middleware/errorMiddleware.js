@@ -25,9 +25,17 @@ const errorHandler = (err, req, res, next) => {
   // Mongoose Duplicate Key Error (11000)
   if (err.code === 11000) {
     statusCode = 409;
-    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    const rawKeys = Object.keys(err.keyValue || {});
+    const filteredKeys = rawKeys.filter((k) => k !== 'createdBy');
+    const field = filteredKeys[0] || rawKeys[0] || 'field';
     const value = err.keyValue ? err.keyValue[field] : '';
-    message = `A record with ${field} '${value}' already exists`;
+    if (field === 'reference') {
+      message = `Product reference '${value}' already exists`;
+    } else if (field === 'barcode') {
+      message = `Product barcode '${value}' already exists`;
+    } else {
+      message = `A record with ${field} '${value}' already exists`;
+    }
     errors = [{ field, message: `${field} must be unique` }];
   }
 
