@@ -55,12 +55,19 @@ class ProductService {
     });
 
     if (safeQty > 0) {
+      const movementOrigin = (defaultOrigin || 'Stock Initial').trim();
+      const movementPrice = price || 0;
+      const totalValue = safeQty * movementPrice;
+      const movementRef = `MOV-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
       await StockMovement.create({
         product: product._id,
         type: 'ENTRY',
         quantity: safeQty,
-        origin: defaultOrigin || 'Stock Initial',
-        unitPrice: price || 0,
+        origin: movementOrigin,
+        unitPrice: movementPrice,
+        totalValue,
+        reference: movementRef,
         note: 'Stock initial à la création du produit',
         createdBy: userId,
       });
