@@ -1094,15 +1094,10 @@ export function InventoryDashboard() {
     }
   }
 
-  // Helper to open Add Product modal with auto-generated reference
+  // Helper to open Add Product modal (user enters reference manually)
   const openAddProductModal = () => {
-    const nextNum = (productsList.length + 1).toString().padStart(4, '0')
-    let autoRef = `PRD-${nextNum}`
-    if (productsList.some((p: any) => p.reference?.toUpperCase() === autoRef)) {
-      autoRef = `PRD-${Date.now().toString().slice(-4)}`
-    }
     setProdForm({
-      reference: autoRef,
+      reference: '',
       name: '',
       price: '',
       defaultOrigin: 'Tunisie',
@@ -1118,16 +1113,14 @@ export function InventoryDashboard() {
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg('')
-    const finalRef = prodForm.reference.trim() || `PRD-${Date.now().toString().slice(-4)}`
     try {
       await productApi.createProduct({
-        reference: finalRef,
+        reference: prodForm.reference.trim(),
         name: prodForm.name,
         price: Number(prodForm.price),
         defaultOrigin: prodForm.defaultOrigin,
         category: prodForm.category || 'Général',
         minimumStock: Number(prodForm.minimumStock || 0),
-        barcode: prodForm.barcode,
         image: prodForm.image,
       })
       setSuccessMsg('Produit créé avec succès!')

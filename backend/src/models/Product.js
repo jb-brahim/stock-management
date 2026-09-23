@@ -47,12 +47,6 @@ const productSchema = new mongoose.Schema(
       min: [0, 'Minimum stock cannot be negative'],
       default: 0,
     },
-    barcode: {
-      type: String,
-      sparse: true,
-      trim: true,
-      index: true,
-    },
     image: {
       type: String,
       default: '',
@@ -76,7 +70,6 @@ const productSchema = new mongoose.Schema(
 
 // Compound index to guarantee reference uniqueness PER USER
 productSchema.index({ createdBy: 1, reference: 1 }, { unique: true });
-productSchema.index({ createdBy: 1, barcode: 1 }, { unique: true, sparse: true });
 
 // Virtual for calculating current stock status
 productSchema.virtual('stockStatus').get(function () {

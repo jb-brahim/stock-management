@@ -8,12 +8,18 @@ const connectDB = async () => {
       console.log(`MongoDB Connected: ${conn.connection.host}`);
     }
 
-    // Drop legacy global reference index if present to allow per-user references
+    // Drop legacy reference and barcode indexes if present
     try {
       await mongoose.connection.collection('products').dropIndex('reference_1');
-    } catch (indexErr) {
-      // Ignore if index doesn't exist or already dropped
-    }
+    } catch (indexErr) {}
+
+    try {
+      await mongoose.connection.collection('products').dropIndex('barcode_1');
+    } catch (indexErr) {}
+
+    try {
+      await mongoose.connection.collection('products').dropIndex('createdBy_1_barcode_1');
+    } catch (indexErr) {}
 
     return conn;
   } catch (error) {

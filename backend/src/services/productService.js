@@ -15,11 +15,16 @@ class ProductService {
       defaultOrigin,
       category,
       minimumStock,
-      barcode,
       image,
     } = productData;
 
-    let finalRef = reference && reference.trim() ? reference.toUpperCase().trim() : `PRD-${Date.now().toString().slice(-6)}`;
+    if (!reference || !reference.trim()) {
+      const error = new Error('Product reference is required');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const finalRef = reference.trim().toUpperCase();
 
     const existingProduct = await Product.findOne({
       createdBy: userId,
@@ -31,20 +36,6 @@ class ProductService {
       throw error;
     }
 
-    const cleanBarcode = barcode && barcode.trim() ? barcode.trim() : undefined;
-
-    if (cleanBarcode) {
-      const existingBarcode = await Product.findOne({
-        createdBy: userId,
-        barcode: cleanBarcode,
-      });
-      if (existingBarcode) {
-        const error = new Error(`Product with barcode '${cleanBarcode}' already exists`);
-        error.statusCode = 409;
-        throw error;
-      }
-    }
-
     const product = await Product.create({
       reference: finalRef,
       name,
@@ -54,7 +45,6 @@ class ProductService {
       defaultOrigin: defaultOrigin || '',
       category: category || 'General',
       minimumStock: minimumStock !== undefined ? minimumStock : 0,
-      barcode: cleanBarcode,
       image: image || '',
       createdBy: userId,
     });
@@ -163,25 +153,8 @@ class ProductService {
       category,
       defaultOrigin,
       minimumStock,
-      barcode,
       image,
     } = updateData;
-
-    if (barcode && barcode !== product.barcode) {
-      const barcodeQuery = {
-        barcode: barcode.trim(),
-        _id: { $ne: productId },
-      };
-      if (userId) barcodeQuery.createdBy = userId;
-
-      const existingBarcode = await Product.findOne(barcodeQuery);
-      if (existingBarcode) {
-        const error = new Error(`Barcode '${barcode}' is already in use by another product`);
-        error.statusCode = 409;
-        throw error;
-      }
-      product.barcode = barcode.trim();
-    }
 
     if (name !== undefined) product.name = name;
     if (price !== undefined) product.price = price;

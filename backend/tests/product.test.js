@@ -33,7 +33,6 @@ describe('Product API Endpoints', () => {
     defaultOrigin: 'France',
     category: 'Furniture',
     minimumStock: 5,
-    barcode: '6191234567890',
   };
 
   it('should create a product with initial quantity set to 0', async () => {
@@ -80,20 +79,7 @@ describe('Product API Endpoints', () => {
     expect(res.body.pagination).toHaveProperty('total', 1);
   });
 
-  it('should fetch product by barcode scanner value', async () => {
-    await request(app)
-      .post('/api/products')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send(sampleProduct);
 
-    const res = await request(app)
-      .get(`/api/products/barcode/${sampleProduct.barcode}`)
-      .set('Authorization', `Bearer ${adminToken}`);
-
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.product.barcode).toEqual(sampleProduct.barcode);
-  });
 
   it('should update product metadata without modifying quantity', async () => {
     const createRes = await request(app)
