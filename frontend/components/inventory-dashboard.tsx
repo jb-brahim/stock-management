@@ -875,6 +875,8 @@ export function InventoryDashboard() {
   const [showExitModal, setShowExitModal] = useState(false)
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
   const [selectedEnlargedImage, setSelectedEnlargedImage] = useState<string | null>(null)
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [deletingProduct, setDeletingProduct] = useState(false)
 
   // Product Form State (Blank by default)
   const [prodForm, setProdForm] = useState({
@@ -998,17 +1000,24 @@ export function InventoryDashboard() {
     }
   }
 
-  const handleDeleteProduct = async (id: string, name: string) => {
-    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le produit "${name}" ?`)) return
+  const openDeleteModal = (id: string, name: string) => {
+    setActiveMenuProductId(null)
+    setProductToDelete({ id, name })
+  }
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return
+    setDeletingProduct(true)
     setErrorMsg('')
     try {
-      await productApi.deleteProduct(id)
+      await productApi.deleteProduct(productToDelete.id)
       setSuccessMsg('Produit supprimé avec succès!')
+      setProductToDelete(null)
       loadData()
     } catch (err: any) {
       setErrorMsg(err.message || 'Erreur lors de la suppression du produit')
     } finally {
-      setActiveMenuProductId(null)
+      setDeletingProduct(false)
     }
   }
 
@@ -1774,7 +1783,7 @@ export function InventoryDashboard() {
                                 <button
                                   type="button"
                                   className="card-popover-item danger"
-                                  onClick={() => handleDeleteProduct(p._id || p.id, p.name)}
+                                  onClick={() => openDeleteModal(p._id || p.id, p.name)}
                                 >
                                   <Trash2 style={{ width: '14px', height: '14px', color: '#e15e72' }} />
                                   <span>{t('delete')}</span>
@@ -1963,7 +1972,7 @@ export function InventoryDashboard() {
                                     type="button"
                                     className="clean-icon-btn"
                                     style={{ width: '28px', height: '28px', padding: 0 }}
-                                    onClick={() => handleDeleteProduct(p._id || p.id, p.name)}
+                                    onClick={() => openDeleteModal(p._id || p.id, p.name)}
                                     title={t('delete')}
                                   >
                                     <Trash2 style={{ width: '14px', height: '14px', color: '#e15e72' }} />
@@ -3418,6 +3427,118 @@ export function InventoryDashboard() {
                 display: 'block',
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Custom Premium Delete Confirmation Modal */}
+      {productToDelete && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => !deletingProduct && setProductToDelete(null)}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '20px',
+              maxWidth: '440px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              border: '1px solid #f1f5f9',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '14px',
+                  background: '#fef2f2',
+                  border: '1px solid #fee2e2',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: '#ef4444',
+                  flexShrink: 0,
+                }}
+              >
+                <Trash2 style={{ width: '24px', height: '24px' }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 6px 0' }}>
+                  {t('deleteProductTitle') || 'Supprimer le produit'}
+                </h3>
+                <p style={{ fontSize: '14px', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+                  Êtes-vous sûr de vouloir supprimer le produit <strong style={{ color: '#0f172a', wordBreak: 'break-word' }}>"{productToDelete.name}"</strong> ? Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', paddingTop: '8px', borderTop: '1px solid #f1f5f9' }}>
+              <button
+                type="button"
+                disabled={deletingProduct}
+                onClick={() => setProductToDelete(null)}
+                style={{
+                  height: '42px',
+                  padding: '0 18px',
+                  borderRadius: '10px',
+                  border: '1.5px solid #cbd5e1',
+                  background: '#f8fafc',
+                  color: '#475569',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {t('cancel') || 'Annuler'}
+              </button>
+              <button
+                type="button"
+                disabled={deletingProduct}
+                onClick={confirmDeleteProduct}
+                style={{
+                  height: '42px',
+                  padding: '0 20px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: '#ef4444',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  opacity: deletingProduct ? 0.7 : 1,
+                }}
+              >
+                {deletingProduct ? (
+                  <span>{t('deletingText') || 'Suppression...'}</span>
+                ) : (
+                  <>
+                    <Trash2 style={{ width: '16px', height: '16px' }} />
+                    <span>{t('confirmDeleteBtn') || 'Oui, Supprimer'}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
